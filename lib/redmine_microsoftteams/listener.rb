@@ -3,29 +3,6 @@ require 'json'
 
 module RedmineMicrosoftteams
 class Listener < Redmine::Hook::Listener
-  def redmine_microsoftteams_issues_new_after_save(context={})
-    issue = context[:issue]
-
-    url = url_for_project issue.project
-
-    return unless url
-    return if issue.is_private?
-
-    title = "#{escape issue.project}"
-    text = "#{escape issue.author} #{l(:issue_created)} [#{escape issue}](#{object_url issue}) #{mentions issue.description}"
-
-    facts = {
-      I18n.t("field_status") => escape(issue.status.to_s),
-      I18n.t("field_priority") => escape(issue.priority.to_s),
-      I18n.t("field_assigned_to") => escape(issue.assigned_to.to_s)
-    }
-
-    sections = issue.description if issue.description
-    facts[I18n.t("field_watcher")] = escape(issue.watcher_users.join(', ')) if Setting.plugin_redmine_microsoftteams['display_watchers'] == 'yes'
-
-    speak title, text, sections, facts, url
-  end
-
   def redmine_microsoftteams_issues_edit_after_save(context={})
     return unless Setting.plugin_redmine_microsoftteams['post_updates'] == '1'
 
@@ -89,30 +66,6 @@ class Listener < Redmine::Hook::Listener
     facts = get_facts(journal)
 
     sections = {:text => facts_title}
-    speak title, text, sections, facts, url
-  end
-
-  def controller_wiki_edit_after_save(context = { })
-    return unless Setting.plugin_redmine_microsoftteams['post_wiki_updates'] == '1'
-
-    project = context[:project]
-    page = context[:page]
-
-    user = page.content.author
-    page_url = "[#{page.title}](#{object_url page})"
-    comment = "#{page_url} #{l(:wiki_updated_by)} *#{user}*"
-
-    url = url_for_project project
-
-    title = "#{escape project}"
-
-    if not page.content.comments.empty?
-      text = "#{comment}\n\n#{escape page.content.comments}"
-    end
-
-    sections = nil
-    facts = nil
-
     speak title, text, sections, facts, url
   end
 
