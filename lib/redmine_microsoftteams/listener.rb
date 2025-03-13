@@ -14,7 +14,7 @@ class Listener < Redmine::Hook::Listener
     return unless url
 
     title = "#{escape issue.project}"
-    text = "#{escape journal.user.to_s} #{l(:issue_updated)} [#{escape issue}](#{object_url issue}) #{mentions journal.notes}"
+    text = "#{escape journal.user.to_s} updated [#{escape issue}](#{object_url issue}) #{mentions journal.notes}"
 
     sections = journal.notes if journal.notes
     facts = get_facts(journal)
@@ -33,7 +33,7 @@ class Listener < Redmine::Hook::Listener
     return if issue.is_private?
 
     title = "#{escape issue.project}"
-    text = "#{escape journal.user.to_s} #{l(:issue_updated)} [#{escape issue}](#{object_url issue})"
+    text = "#{escape journal.user.to_s} updated [#{escape issue}](#{object_url issue})"
 
     repository = changeset.repository
 
