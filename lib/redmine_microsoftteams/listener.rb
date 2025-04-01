@@ -72,65 +72,9 @@ class Listener < Redmine::Hook::Listener
   def speak(title, text, sections=nil, facts=nil, url=nil)
     url = Setting.plugin_redmine_microsoftteams['teams_url'] if not url
 
-    if url.downcase.include?("webhook")
-      if sections
-        sections = escape_description limit_string_length sections
-      else
-        sections = []
-      end
-
-      section = {}
-      section[:facts] = []
-      facts.each { |name, value| section[:facts] << {:name => name, :value => value}}
-      if section[:facts].length != 0
-        sections << section
-      end
-
-      msg = {}
-      msg[:title] = title if title
-      msg[:text] = text if text
-      msg[:sections] = sections
-    else
-      # Create the Adaptive Card structure
-      fact_set = []
-      if facts
-        facts.each do |name, value|
-          fact_set << { "title": name, "value": value }
-        end
-      end
-
-      adaptive_card_sections = []
-      adaptive_card_sections << {
-        "type": "FactSet",
-        "facts": fact_set
-      } if fact_set.length != 0
-
-      adaptive_card = {
-        "type": "AdaptiveCard",
-        "version": "1.2",
-        "body": []
-      }
-
-      adaptive_card[:body] << { "type": "TextBlock", "text": title, "weight": "bolder", "size": "medium" } if title
-      adaptive_card[:body] << { "type": "TextBlock", "text": text, "wrap": true } if text
-      if sections
-        description = get_adaptive_format limit_string_length sections
-        description.each do |desc|
-          adaptive_card[:body] << desc
-        end
-      end
-      adaptive_card[:body].concat(adaptive_card_sections)
-      adaptive_card[:msteams] = { "width": "full" }
-
-      msg = {}
-      msg[:type] = "message"
-      msg[:attachments] = [
-        {
-          "contentType": "application/vnd.microsoft.card.adaptive",
-          "content": adaptive_card
-        }
-      ]
-    end
+    msg = {}
+    msg[:title] = title if title
+    msg[:text] = text if text
 
     begin
       client = HTTPClient.new
