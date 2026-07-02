@@ -72,9 +72,25 @@ class Listener < Redmine::Hook::Listener
   def speak(title, text, sections=nil, facts=nil, url=nil)
     url = Setting.plugin_redmine_microsoftteams['teams_url'] if not url
 
+    # Create the Adaptive Card structure
+    adaptive_card = {
+      "type": "AdaptiveCard",
+      "version": "1.2",
+      "body": []
+    }
+
+    adaptive_card[:body] << { "type": "TextBlock", "text": title, "weight": "bolder", "size": "medium" } if title
+    adaptive_card[:body] << { "type": "TextBlock", "text": text, "wrap": true } if text
+    adaptive_card[:msteams] = { "width": "full" }
+
     msg = {}
-    msg[:title] = title if title
-    msg[:text] = text if text
+    msg[:type] = "message"
+    msg[:attachments] = [
+      {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+        "content": adaptive_card
+      }
+    ]
 
     begin
       client = HTTPClient.new
